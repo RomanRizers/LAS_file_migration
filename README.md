@@ -75,3 +75,78 @@ LAS (Log ASCII Standard) файл — формат файла, использу�
   <img src="Screenshots/figma.png" alt="figma" width="100%" height="100%" />
 </p>
 
+
+## Реализация управления таблицами в базе данных
+Для отображения списка таблиц используется функция list_tables. Она отвечает за получение списка всех таблиц, находящихся в базе данных,
+за исключением системных и служебных таблиц Django. Для этого используется SQL-запрос к информации схемы базы данных.
+
+Функция list_tables:
+```python
+def list_tables(request):
+    excluded_tables = [
+        'django_migrations',
+        'django_content_type',
+        'auth_permission',
+        'auth_group',
+        'auth_group_permissions',
+        'auth_user',
+        'auth_user_groups',
+        'auth_user_user_permissions',
+        'django_admin_log',
+        'django_session'
+    ]
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+    tables = [row[0] for row in cursor.fetchall() if row[0] not in excluded_tables]
+    cursor.close()
+
+    return render(request, 'list_tables.html', {'tables': tables})
+```
+Для отображения содержимого таблицы используется функция table_view.
+Эта функция выполняет SQL-запрос для получения всех данных из указанной таблицы и передает их в HTML шаблон.
+
+Функция table_view:
+```python
+def table_view(request, table_name):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM \"{}\"".format(table_name))
+    rows = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    cursor.close()
+    return render(request, 'table_view.html',
+                  {'table_name': table_name,
+                   'column_names': column_names, 'rows': rows})
+```
+Для переименования таблицы используется функция rename_table. Эта функция также обрабатывает POST-запрос и выполняет SQL-команду для переименования.
+Функция принимает старое и новое имя таблицы и выполняет команду ALTER TABLE для переименования.
+
+Функция rename_table:
+```python
+def rename_table(request):
+    if request.method == 'POST':
+        old_table_name = request.POST.get('old_table_name')
+        new_table_name = request.POST.get('new_table_name')
+
+        cursor = connection.cursor()
+        cursor.execute("ALTER TABLE {} RENAME TO {}".
+                       format(connection.ops.quote_name(old_table_name),
+                              connection.ops.quote_name(new_table_name)))
+        cursor.close()
+
+        return HttpResponseRedirect(reverse('list_tables'))
+```
+Для удаления таблицы используется функция delete_table. 
+Эта функция обрабатывает POST-запрос, выполняет SQL-команду для удаления указанной таблицы и перенаправляет пользователя на страницу со списком таблиц.
+
+Функция delete_table:
+```python
+def delete_table(request):
+    if request.method == 'POST':
+        table_name = request.POST.get('table_name')
+        cursor = connection.cursor()
+        cursor.execute("DROP TABLE IF EXISTS {}"
+                       .format(connection.ops.quote_name(table_name)))
+        cursor.close()
+        return HttpResponseRedirect(reverse('list_tables'))
+```
