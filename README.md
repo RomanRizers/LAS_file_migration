@@ -240,3 +240,29 @@ def export_to_txt(request):
     </tr>
   </table>
 </p>
+
+
+## Скриншоты
+<p align="center">
+  <img src="screenshots/main_page.png" alt="main" width="100%" height="100%"/>
+  <img src="Screenshots/all_table.png" alt="main" width="100%" height="100%"/>
+  <img src="Screenshots/viewing.png" alt="main" width="100%" height="100%"/>
+  <img src="Screenshots/graph1.png" alt="main" width="100%" height="100%"/>
+  <img src="Screenshots/graph2.png" alt="main" width="100%" height="100%"/>
+</p>
+<p align="center">
+  <table>
+    <tr>
+      <td><img src="Screenshots/error.png" alt="xlsx" width="100%"/></td>
+      <td><img src="Screenshots/success.png" alt="txtx" width="100%"/></td>
+    </tr>
+  </table>
+</p>
+<p align="center">
+  <table>
+    <tr>
+      <td><img src="Screenshots/confirmation.png" alt="xlsx" width="100%"/></td>
+      <td><img src="Screenshots/change.png" alt="txtx" width="100%"/></td>
+    </tr>
+  </table>
+</p>
