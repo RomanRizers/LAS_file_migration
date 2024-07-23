@@ -150,3 +150,93 @@ def delete_table(request):
         cursor.close()
         return HttpResponseRedirect(reverse('list_tables'))
 ```
+
+
+## Экспорт данных
+Для экспорта данных в формат Excel используется функция export_to_excel.
+Эта функция принимает имя таблицы в качестве входного параметра, выполняет SQL-запрос для получения данных из указанной таблицы и формирует файл Excel.
+
+Функция export_to_excel:
+```python
+def export_to_excel(request):
+    if request.method == 'POST':
+        table_name = request.POST.get('table_name')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM {}".format(connection.ops.quote_name(table_name)))
+            rows = cursor.fetchall()
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = table_name
+
+        columns = [desc[0] for desc in cursor.description]
+        ws.append(columns)
+
+        for row in rows:
+            ws.append(row)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{table_name}.xlsx"'
+        wb.save(response)
+        return response
+    else:
+        return HttpResponse('Ошибка при экспорте', status=405)
+```
+
+Для экспорта данных в формат JSON используется функция export_to_json. 
+Эта функция аналогична предыдущей, за исключением того, что она формирует файл JSON с данными из базы данных.
+
+Функция export_to_json:
+```python
+def export_to_json(request):
+    if request.method == 'POST':
+        table_name = request.POST.get('table_name')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM {}".format(connection.ops.quote_name(table_name)))
+            rows = cursor.fetchall()
+
+        def decimal_default(obj):
+            if isinstance(obj, Decimal):
+                return str(obj)
+            raise TypeError
+
+        data = [dict(zip([column[0] for column in cursor.description], row)) for row in rows]
+        json_data = json.dumps(data, indent=4, default=decimal_default)
+
+        response = HttpResponse(json_data, content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="{table_name}.json"'
+        return response
+    else:
+        return render(request, 'error.html', {'message': 'Метод не поддерживается'})
+```
+
+Для экспорта данных в текстовый формат используется функция export_to_txt.
+Она аналогична предыдущим функциям, но формирует txt файл с использованием табуляции.
+```python
+def export_to_txt(request):
+    if request.method == 'POST':
+        table_name = request.POST.get('table_name')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM {}".format(connection.ops.quote_name(table_name)))
+            rows = cursor.fetchall()
+
+        data = '\n'.join(['\t'.join(map(str, row)) for row in rows])
+
+        response = HttpResponse(data, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{table_name}.txt"'
+        return response
+    else:
+        return render(request, 'error.html', {'message': 'Ошибка при экспорте'})
+```
+
+
+Пример экспортированных файлов:
+<p align="center">
+  <table>
+    <tr>
+      <td><img src="Screenshots/xlsx.png" alt="xlsx" width="100%"/></td>
+      <td><img src="Screenshots/txt.png" alt="txtx" width="100%"/></td>
+      <td><img src="Screenshots/json.png" alt="json" width="100%"/></td>
+    </tr>
+  </table>
+</p>
