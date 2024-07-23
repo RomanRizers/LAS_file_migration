@@ -1,0 +1,27 @@
+from django.shortcuts import render
+from django.http import HttpResponse
+import psycopg2
+from .utils import parse_las_file_and_insert_to_db
+
+def upload_las_file(request):
+    if request.method == 'POST' and request.FILES['las_file']:
+        las_file = request.FILES['las_file']
+        table_name = request.POST.get('table_name')
+        if not las_file.name.endswith('.las'):
+            return HttpResponse("Ошибка: Пожалуйста, загрузите файл формата .las")
+        try:
+            connection = psycopg2.connect(
+                host="localhost",
+                database="LASfile",
+                user="postgres",
+                password="1607"
+            )
+
+            parse_las_file_and_insert_to_db(las_file, connection, table_name)
+
+            connection.close()
+            return HttpResponse("Данные успешно загружены и добавлены в базу данных!")
+        except psycopg2.Error as e:
+            print("Ошибка при подключении к базе данных:", e)
+            return HttpResponse("Произошла ошибка при загрузке данных в базу данных!")
+    return render(request, 'upload_las_file.html')

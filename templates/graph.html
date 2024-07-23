@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ selected_table_name }}</title>
+    <!-- Подключение стилей Plotly.js (если необходимо) -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Подключение JavaScript файла для построения графика -->
+    <script src="{% static 'js/plot.js' %}"></script>
+    <style>
+        body {
+            font-family: Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("{% static 'images/background.jpg' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 50px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .title {
+            text-align: center;
+            color: #007bff;
+            font-size: 35px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 50px 10px 10px 10px;
+        }
+        .gubkin {
+            position: absolute;
+            top: 10px;
+            right: -20px;
+            cursor: pointer;
+            width: 200px;
+            height: 80px;
+            background-image: url("{% static 'images/gubkin_logo.png' %}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .container {
+            max-width: 5000px;
+            min-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        #graph,
+        #graph2 {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        #second-graph-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .logo {
+            position: absolute;
+            top: 0px;
+            left: 5px;
+            cursor: pointer;
+            width: 150px;
+            height: 100px;
+            background-image: url("{% static 'images/icon.png' %}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+     <div class="header">
+        <a href="{% url 'upload_las_file' %}" class="logo"></a>
+         <a href="#" class="gubkin"></a>
+    </div>
+    <div class="title">Графики значений из LAS файлов</div>
+    <!-- Элемент выбора колонки для вертикальной оси первого графика -->
+    <div class="container">
+        <label for="column-selector">Выберите колонку для вертикальной оси первого графика:</label>
+        <select id="column-selector" style="max-width: 500px;">
+            {% for column_name in selected_table_columns %}
+            {% if column_name != 'id' %}
+                <option value="{{ column_name }}">{{ column_name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <button id="plot-button">Построить график</button>
+        <div id="graph"></div>
+    </div>
+    <!-- Контейнер для первого графика -->
+    <!-- Кнопка для добавления еще одного графика -->
+    <button id="add-graph-button">Добавить еще один график</button>
+    <!-- Контейнер для второго графика (изначально скрыт) -->
+    <div id="second-graph-container">
+        <label for="column-selector2">Выберите колонку для вертикальной оси второго графика:</label>
+        <select id="column-selector2" style="max-width: 500px;">
+            {% for column_name in selected_table_columns %}
+            {% if column_name != 'id' %}
+                <option value="{{ column_name }}">{{ column_name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <button id="plot-button2">Построить второй график</button>
+        <div id="graph2"></div>
+    </div>
+    <!-- Таблица данных (изначально скрыта) -->
+    <table id="data-table" style="display: none;">
+        <thead>
+            <tr>
+                {% for column_name in selected_table_columns %}
+                <th>{{ column_name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for value in row %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- JavaScript для построения графика -->
+    <script>
+        var columnIndex; // Переменная для хранения индекса выбранной колонки первого графика
+        var columnIndex2; // Переменная для хранения индекса выбранной колонки второго графика
+
+        // Обработчики событий изменения выбранных колонок
+        document.getElementById('column-selector').addEventListener('change', function() {
+            columnIndex = this.selectedIndex; // Устанавливаем значение переменной columnIndex равным индексу выбранной колонки первого графика
+        });
+
+        document.getElementById('column-selector2').addEventListener('change', function() {
+            columnIndex2 = this.selectedIndex; // Устанавливаем значение переменной columnIndex2 равным индексу выбранной колонки второго графика
+        });
+
+        document.getElementById('plot-button').addEventListener('click', function() {
+            plotGraph(columnIndex, 'graph');
+        });
+
+        document.getElementById('plot-button2').addEventListener('click', function() {
+            plotGraph(columnIndex2, 'graph2');
+        });
+
+        document.getElementById('add-graph-button').addEventListener('click', function() {
+            document.getElementById('second-graph-container').style.display = 'block';
+            this.style.display = 'none';
+        });
+
+        function plotGraph(index, containerId, xAxisLabel, yAxisLabel) {
+            var deptData = [];
+            var otherData = [];
+
+            var table = document.getElementById('data-table');
+            for (var i = 1; i < table.rows.length; i++) {
+            var row = table.rows[i];
+            var deptValue = parseFloat(row.cells[1].innerHTML); // Данные из колонки dept, всегда в первой колонке
+            var otherValue = parseFloat(row.cells[index].innerHTML); // Данные из выбранной колонки
+
+            deptData.push(deptValue);
+            otherData.push(otherValue);
+        }
+
+        var trace = {
+            x: deptData,
+            y: otherData,
+            mode: 'lines',
+            type: 'scatter'
+        };
+
+        var layout = {
+        xaxis: {
+            title: {
+                text: xAxisLabel,
+                font: {
+                    family: 'Verdana',
+                    size: 16,
+                    color: '#007bff'
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: yAxisLabel,
+                font: {
+                    family: 'Verdana',
+                    size: 16,
+                    color: '#007bff'
+                }
+            }
+        }
+        };
+
+        var data = [trace];
+
+        Plotly.newPlot(containerId, data, layout);
+    }
+
+    document.getElementById('plot-button').addEventListener('click', function() {
+        var columnIndex = document.getElementById('column-selector').selectedIndex;
+        var selectedColumn = document.getElementById('column-selector').value;
+        var xAxisLabel = 'dept';
+        var yAxisLabel = selectedColumn;
+        plotGraph(columnIndex, 'graph', xAxisLabel, yAxisLabel);
+    });
+
+    document.getElementById('plot-button2').addEventListener('click', function() {
+        var columnIndex2 = document.getElementById('column-selector2').selectedIndex;
+        var selectedColumn2 = document.getElementById('column-selector2').value;
+        var xAxisLabel2 = 'dept';
+        var yAxisLabel2 = selectedColumn2;
+        plotGraph(columnIndex2, 'graph2', xAxisLabel2, yAxisLabel2);
+    });
+    </script>
+</body>
+</html>
