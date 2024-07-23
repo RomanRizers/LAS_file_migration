@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import JsonResponse
 import psycopg2
 from .utils import parse_las_file_and_insert_to_db
 
@@ -8,7 +8,7 @@ def upload_las_file(request):
         las_file = request.FILES['las_file']
         table_name = request.POST.get('table_name')
         if not las_file.name.endswith('.las'):
-            return HttpResponse("Ошибка: Пожалуйста, загрузите файл формата .las")
+            return JsonResponse({'success': False})
         try:
             connection = psycopg2.connect(
                 host="localhost",
@@ -20,8 +20,9 @@ def upload_las_file(request):
             parse_las_file_and_insert_to_db(las_file, connection, table_name)
 
             connection.close()
-            return HttpResponse("Данные успешно загружены и добавлены в базу данных!")
+            return JsonResponse({'success': True})
         except psycopg2.Error as e:
             print("Ошибка при подключении к базе данных:", e)
-            return HttpResponse("Произошла ошибка при загрузке данных в базу данных!")
+            return JsonResponse({'success': False})
     return render(request, 'upload_las_file.html')
+

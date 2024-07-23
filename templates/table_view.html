@@ -5,145 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ table_name }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url("{% static 'images/background.jpg' %}");
-            background-size: 100% auto;
-            background-repeat: repeat;
-        }
-        .header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 50px 0;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            position: absolute;
-            top: 0px;
-            left: 5px;
-            cursor: pointer;
-            width: 150px;
-            height: 100px;
-            background-image: url("{% static 'images/icon.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .gubkin {
-            position: absolute;
-            top: 10px;
-            right: -20px;
-            cursor: pointer;
-            width: 200px;
-            height: 80px;
-            background-image: url("{% static 'images/gubkin_logo.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .title {
-            text-align: center;
-            color: #007bff;
-            font-size: 35px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 50px 10px 10px 10px;
-        }
-        .container {
-            max-width: 800px;
-            min-width: 400px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-        .container table {
-            width: 100%; /* Ширина таблицы равна ширине контейнера */
-        }
-        .container::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        .container::-webkit-scrollbar-thumb {
-            background: #007bff;
-            border-radius: 10px;
-        }
-        .container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        h1 {
-            text-align: center;
-            color: #007bff;
-            margin-bottom: 20px;
-        }
-        table {
-            border-collapse: collapse;
-            direction: ltr;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .export-button {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .export-button form {
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .export-button button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border: none;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .export-button button:hover {
-            background-color: #0056b3;
-        }
-        .delete-button {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .delete-button form {
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .delete-button button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border: none;
-            border-radius: 4px;
-            background-color: #ff0000;
-            color: #fff;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .delete-button button:hover {
-            background-color: #cc0000;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_view.css' %}">
 </head>
 <body>
     <div class="header">
         <a href="{% url 'upload_las_file' %}" class="logo"></a>
-        <a href="#" class="gubkin"></a>
+        <a href="https://www.gubkin.ru/" class="gubkin"></a>
     </div>
     <div class="title">Название таблицы: {{ table_name }}</div>
     <div class="export-button">
@@ -178,6 +45,21 @@
             <button type="submit" class="delete-table-button">Удалить таблицу из БД</button>
         </form>
     </div>
+    <div class="rename-button">
+            <button id="rename-table-button">Изменить название таблицы</button>
+            <div id="rename-table-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <form action="{% url 'rename_table' %}" method="post" id="rename-table-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="old_table_name" value="{{ table_name }}">
+                        <label for="new_table_name">Новое название таблицы:</label>
+                        <input type="text" id="new_table_name" name="new_table_name" required>
+                        <button type="submit">Изменить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     <div class="container">
         <table>
             <thead>
@@ -198,23 +80,6 @@
             </tbody>
         </table>
     </div>
-    <script>
-        // JavaScript для подтверждения удаления таблицы
-        document.addEventListener("DOMContentLoaded", function() {
-            var deleteButtons = document.querySelectorAll(".delete-table-button");
-
-            deleteButtons.forEach(function(button) {
-                button.addEventListener("click", function(event) {
-                    event.preventDefault();
-                    var confirmDelete = confirm("Вы уверены, что хотите удалить эту таблицу?");
-                    if (confirmDelete) {
-                        // Если пользователь подтвердил удаление, отправляем форму
-                        var form = button.closest("form");
-                        form.submit();
-                    }
-                });
-            });
-        });
-    </script>
+<script src="{% static 'js/rename_and_delete.js' %}"></script>
 </body>
 </html>

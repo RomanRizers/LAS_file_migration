@@ -6,93 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список таблиц</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url("{% static 'images/background.jpg' %}");
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
-        .header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 50px 0;
-            text-align: center;
-            width: 100%;
-        }
-        .logo {
-            position: absolute;
-            top: 0px;
-            left: 5px;
-            cursor: pointer;
-            width: 150px;
-            height: 100px;
-            background-image: url("{% static 'images/icon.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .gubkin {
-            position: absolute;
-            top: 10px;
-            right: -20px;
-            cursor: pointer;
-            width: 200px;
-            height: 80px;
-            background-image: url("{% static 'images/gubkin_logo.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .title {
-            text-align: center;
-            color: #007bff;
-            font-size: 35px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 50px 10px 10px 10px;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            grid-gap: 20px;
-            max-width: 1200px;
-            padding: 50px 10px 10px 10px; /* увеличиваем верхний отступ, чтобы контент не перекрывался с заголовком */
-            margin: auto; /* центрируем плитки таблиц */
-        }
-        .table-card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-            cursor: pointer; /* Добавляем указатель при наведении на плитку */
-            text-decoration: none; /* Убираем подчеркивание у ссылки */
-            color: #007bff; /* Цвет текста */
-            font-size: 18px; /* Размер шрифта */
-        }
-        .table-card:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
-        }
-        .table-card:hover a {
-            text-decoration: none; /* Убираем подчеркивание текста при наведении */
-        }
-        .title {
-            text-align: center;
-            color: #007bff;
-            font-size: 40px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 100px 20px 20px 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/list_tables.css' %}">
 </head>
 <body>
     <div class="header">
         <a href="{% url 'upload_las_file' %}" class="logo"></a>
-        <a href="#" class="gubkin"></a>
+        <a href="https://www.gubkin.ru/" class="gubkin"></a>
     </div>
     <div class="title">Список таблиц в базе данных PostgreSQL</div>
     <div class="container">
@@ -104,3 +23,4 @@
     </div>
 </body>
 </html>
+

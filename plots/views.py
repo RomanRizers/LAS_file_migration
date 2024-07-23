@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.db import connection
-from django.http import HttpResponse
 
 def plot_graph(request):
     table_name = request.POST.get('table_name')
@@ -11,9 +10,8 @@ def plot_graph(request):
     cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = %s", [table_name])
     table_columns = [row[0] for row in cursor.fetchall() if row[0] != 'dept']
 
-    # Здесь вы можете добавить код для получения данных из таблицы и сохранения их в переменной rows
-    # Например:
-    cursor.execute("SELECT * FROM {}".format(table_name))
+    query = "SELECT * FROM {}".format(connection.ops.quote_name(table_name))
+    cursor.execute(query)
     rows = cursor.fetchall()
 
     cursor.close()
@@ -21,9 +19,7 @@ def plot_graph(request):
     context = {
         'selected_table_name': table_name,
         'selected_table_columns': table_columns,
-        'rows': rows,  # Добавляем переменную rows в контекст
+        'rows': rows,
     }
 
     return render(request, 'graph.html', context)
-
-

@@ -6,126 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузка файла LAS</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url("{% static 'images/background.jpg' %}");
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
-        .header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 50px 0;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .gubkin {
-            position: absolute;
-            top: 10px;
-            right: -20px;
-            cursor: pointer;
-            width: 200px;
-            height: 80px;
-            background-image: url("{% static 'images/gubkin_logo.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .logo {
-            position: absolute;
-            top: 0px;
-            left: 5px;
-            cursor: pointer;
-            width: 150px;
-            height: 100px;
-            background-image: url("{% static 'images/icon.png' %}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        p {
-            font-size: 24px;
-            text-align: center;
-            color: #007bff;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-        form {
-            margin-top: 20px;
-        }
-        input[type="file"],
-        input[type="text"],
-        button[type="submit"] {
-            display: block;
-            width: calc(100% - 24px); /* Adjusted width */
-            margin: 0 auto 20px auto; /* Adjusted margin */
-            padding: 14px;
-            font-family: 'Verdana', sans-serif;
-            font-size: 18px;
-            border-radius: 8px;
-            border: 2px solid #007bff; /* Adjusted border */
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            box-sizing: border-box;
-        }
-        input[type="file"]:focus,
-        input[type="text"]:focus {
-            border-color: #0056b3; /* Adjusted focus border color */
-            outline: 0;
-        }
-        button[type="submit"],
-        button {
-            display: block;
-            width: calc(100% - 24px); /* Adjusted width */
-            margin: 0 auto 20px auto; /* Adjusted margin */
-            padding: 14px;
-            font-family: 'Verdana', sans-serif;
-            font-size: 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.15s ease-in-out;
-            background-color: #007bff;
-            color: #fff;
-        }
-        button[type="submit"]:hover,
-        button:hover {
-            background-color: #0056b3;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #555;
-        }
-        .title {
-            text-align: center;
-            color: #007bff;
-            font-size: 35px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 50px 10px 10px 10px;
-        }
-    </style>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/upload_las_file.css' %}">
 </head>
 <body>
     <div class="header">
         <a href="{% url 'upload_las_file' %}" class="logo"></a>
-        <a href="#" class="gubkin"></a>
+        <a href="https://www.gubkin.ru/" class="gubkin"></a>
     </div>
     <div class="title">Импорт данных из .LAS в PostgreSQL</div>
     <div class="container">
-        <form method="post" enctype="multipart/form-data">
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="file" name="las_file" accept=".las" required>
             <input type="text" name="table_name" placeholder="Введите название таблицы" required>
@@ -133,10 +24,17 @@
         </form>
         <button onclick="goToListTables()">Перейти к списку всех таблиц</button>
     </div>
+    <div class="custom-overlay" id="customOverlay"></div>
+    <div id="customAlert" class="custom-alert">
+        <div class="alert-content" id="alertContent"></div>
+        <button onclick="hideCustomAlert()">OK</button>
+    </div>
     <script>
         function goToListTables() {
             window.location.href = "{% url 'list_tables' %}";
         }
     </script>
+    <script src="{% static 'js/successful_message.js' %}"></script>
 </body>
 </html>
+
